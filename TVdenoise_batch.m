@@ -20,34 +20,47 @@ clc; clear;
 % Version 1.1, Oct. 12, 2016
 
 
-load('./data/imgs.mat')
-load('./GaussianDistribution2DMask_30.mat')
-mask = double(maskRS2);
+%% Load data 
+files = dir('./data/Brain_data/db_valid_mat/*.mat');
 
+%% Save Path
+savedir = './data/result/';
+
+%% Load mask
+% load G1D10 mask
+load('./mask/GaussianDistribution1DMask_10.mat')
+mask = double(maskRS1);
+% % load G1D30 mask
+% load('./mask/GaussianDistribution1DMask_30.mat')
+% mask = double(maskRS1);
+% % load G2D30 mask
+% load('./mask/GaussianDistribution2DMask_30.mat')
+% mask = double(maskRS2);
+
+%% Config
 Nbiter= 400;	% number of iterations
 lambda = 0.005; 	% regularization parameter ori0.1
 tau = 0.05;		% proximal parameter >0; influences the convergence speed
 
-savedir = './data/result/';
-
+%% LOOP
 for i=1:2000
     
-fprintf('%d/2000\n',i)
-img=squeeze(img_ori(i,:,:));
-
-x_good  = squeeze(img_ori(i,:,:)); 
-
-y = fftshift(fft2(x_good)); 
-y = (double(y)) .* (mask);
-x_bad = ifft2(ifftshift(y));
-x_bad = abs(x_bad);
-
-x_generated = TVdenoising(x_bad,lambda,tau,Nbiter);
-
-%% Save Image
-imwrite(abs(x_good),[savedir, 'groundtruth/groungtruth_',int2str(i),'.png'])
-imwrite(abs(x_generated),[savedir, 'generated/generated_',int2str(i),'.png'])
-imwrite(abs(x_bad),[savedir,'bad/bad_',int2str(i),'.png'])
+    fprintf('%d/2000\n',i)
+    img=squeeze(img_ori(i,:,:));
+    
+    x_good  = squeeze(img_ori(i,:,:)); 
+    
+    y = fftshift(fft2(x_good)); 
+    y = (double(y)) .* (mask);
+    x_bad = ifft2(ifftshift(y));
+    x_bad = abs(x_bad);
+    
+    x_generated = TVdenoising(x_bad,lambda,tau,Nbiter);
+    
+    %% Save Image
+    imwrite(abs(x_good),[savedir, 'groundtruth/groungtruth_',int2str(i),'.png'])
+    imwrite(abs(x_generated),[savedir, 'generated/generated_',int2str(i),'.png'])
+    imwrite(abs(x_bad),[savedir,'bad/bad_',int2str(i),'.png'])
 
 end
 

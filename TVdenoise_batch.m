@@ -1,3 +1,4 @@
+clc; clear;
 % Denoising/smoothing a given image y with the isotropic total variation.
 %
 % The iterative algorithm converges to the unique image x minimizing 
@@ -19,47 +20,42 @@
 % Version 1.1, Oct. 12, 2016
 
 
-function main
+load('./data/imgs.mat')
+load('./GaussianDistribution2DMask_30.mat')
+mask = double(maskRS2);
 
-	Nbiter= 400;	% number of iterations
-	lambda = 0.01; 	% regularization parameter ori0.1
-	tau = 0.01;		% proximal parameter >0; influences the
-		% convergence speed
-    
-    mask = double(imread('gauss_30.tif'))/255;
-        
-	x_good  = rgb2gray(double(imread('sample2.png'))/255); 
-    x_good = imresize(x_good, [256,256]);
-    % Initial image
-	figure(1);
-	imshow(x_good);
-	rng(0);
-    
-    y = fft2(x_good); 
-    y = (double(y)) .* (mask);
-    % y = (double(y));
-    x_bad = ifft2(y);
-    x_bad = abs(x_bad);
-    x_generated = TVdenoising(x_bad,lambda,tau,Nbiter);
-    
-    
-	figure(2);
-	imshow(x_bad);
+Nbiter= 400;	% number of iterations
+lambda = 0.005; 	% regularization parameter ori0.1
+tau = 0.05;		% proximal parameter >0; influences the convergence speed
 
-	figure(3);
-	imshow(x_generated);
+savedir = './data/result/';
+
+for i=1:2000
     
-	imwrite(x_bad,'noisy.png');
-	imwrite(x_generated,'TVdenoised.png');
+fprintf('%d/2000\n',i)
+img=squeeze(img_ori(i,:,:));
+
+x_good  = squeeze(img_ori(i,:,:)); 
+
+y = fftshift(fft2(x_good)); 
+y = (double(y)) .* (mask);
+x_bad = ifft2(ifftshift(y));
+x_bad = abs(x_bad);
+
+x_generated = TVdenoising(x_bad,lambda,tau,Nbiter);
+
+%% Save Image
+imwrite(abs(x_good),[savedir, 'groundtruth/groungtruth_',int2str(i),'.png'])
+imwrite(abs(x_generated),[savedir, 'generated/generated_',int2str(i),'.png'])
+imwrite(abs(x_bad),[savedir,'bad/bad_',int2str(i),'.png'])
 
 end
 
 
 
-
 function x = TVdenoising(y,lambda,tau,Nbiter)
 	
-	rho = 1.99;		% relaxation parameter, in [1,2)
+	rho = 1.98;		% relaxation parameter, in [1,2)
 	sigma = 1/tau/8; % proximal parameter
 	[H,W]=size(y);
 

@@ -1,4 +1,4 @@
-% Denoising/smoothing a given image y with the isotropic total variation.
+1% Denoising/smoothing a given image y with the isotropic total variation.
 %
 % The iterative algorithm converges to the unique image x minimizing 
 %

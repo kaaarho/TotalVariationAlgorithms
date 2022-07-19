@@ -18,18 +18,37 @@ clc; clear;
 % Grenoble, France.
 %
 % Version 1.1, Oct. 12, 2016
-tic
-img_ori = imread('./sample_compare.png'); 
-img_ori = double(img_ori)/255;
 
-load('./GaussianDistribution2DMask_30.mat')
+tic
+
+%% Config
+Nbiter= 300;	% number of iterations
+lambda = 0.002; 	% regularization parameter ori0.1
+tau = 0.01;		% proximal parameter >0; influences the convergence speed
+
+
+%% Load mask
+% load G1D10 mask
+% load('./mask/GaussianDistribution1DMask_10.mat')
+% mask = double(maskRS1);
+% % load G1D30 mask
+% load('./mask/GaussianDistribution1DMask_30.mat')
+% mask = double(maskRS1);
+% % load G2D30 mask
+load('./mask/GaussianDistribution2DMask_30.mat')
 mask = double(maskRS2);
 
-Nbiter= 400;	% number of iterations
-lambda = 0.005; 	% regularization parameter ori0.1
-tau = 0.05;		% proximal parameter >0; influences the convergence speed
+%% Save dir
+% savedir = './data/result_G1D10_CC/TV_G1D10_CC_single';
+% savedir = './data/result_G1D30_CC/TV_G1D30_CC_single';
+savedir = './data/result_G2D30_CC/TV_G2D30_CC_single';
 
-savedir = './data/result/single/';
+if ~exist(savedir,'dir')
+    mkdir(savedir); end
+
+%% Read
+img_ori = double(imread('./data/sample/GT_01440.png'))/255;
+% img_ori = double(rgb2gray(imread('./data/sample/GT_01440.png')))/255;
 
 x_good  = img_ori; 
 
@@ -41,9 +60,15 @@ x_bad = abs(x_bad);
 x_generated = TVdenoising(x_bad,lambda,tau,Nbiter);
 
 %% Save Image
-imwrite(abs(x_good),[savedir, 'groundtruth/groungtruth.png'])
-imwrite(abs(x_generated),[savedir, 'generated/generated.png'])
-imwrite(abs(x_bad),[savedir,'bad/bad.png'])
+gt = abs(x_good);
+recon = abs(x_generated);
+zf = abs(x_bad);
+imwrite(gt,[savedir, '/TV_GT_01440.png'])
+imwrite(recon,[savedir, '/TV_Recon_01440.png'])
+imwrite(zf,[savedir,'/TV_ZF_01440.png'])
+save([savedir, '/TV_GT_01440.mat'], 'gt')
+save([savedir, '/TV_Recon_01440.mat'], 'recon')
+save([savedir, '/TV_ZF_01440.mat'], 'zf')
 
 toc
 
